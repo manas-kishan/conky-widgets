@@ -12,9 +12,9 @@ Understanding where files reside prevents missing font errors, broken paths, and
 
 | Asset | Recommended Location on Linux | Alternative / Standard Path |
 | :--- | :--- | :--- |
-| **Widget Project / Repository** | `/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/` | `~/.conky/` or `~/.config/conky/` |
+| **Widget Project / Repository** | `~/conky-widgets/` (or your chosen clone folder) | `~/.conky/` or `~/.config/conky/` |
 | **Custom Fonts (`.otf`, `.ttf`)** | `~/.local/share/fonts/` | `~/.fonts/` (legacy) |
-| **Desktop Autostart Files** | `~/.config/autostart/` | Cinnamon Startup Applications UI |
+| **Desktop Autostart Files** | `~/.config/autostart/` | Desktop Startup Applications UI |
 | **Legacy Conky Startup Script** | `~/.conky/conky-startup.sh` | N/A |
 | **System-wide Conky Defaults** | `/etc/conky/conky.conf` *(do not edit)* | N/A |
 
@@ -47,7 +47,7 @@ You have two great ways to store your configurations:
 - **Option A (Recommended — Direct in Repo)**:
   Keep configurations directly inside your Git repository:
   ```bash
-  /mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/widgets/time-okami/time-okami.conf
+  path/to/conky-widgets/widgets/time-okami/time-okami.conf
   ```
   *Benefit*: All edits are tracked in Git, and you can push your changes to GitHub without copying files around.
 
@@ -55,7 +55,7 @@ You have two great ways to store your configurations:
   If you use tools like Conky Manager:
   ```bash
   mkdir -p ~/.conky/Okami-Time
-  ln -s "/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/widgets/time-okami/time-okami.conf" ~/.conky/Okami-Time/Okami-Time
+  ln -s "path/to/conky-widgets/widgets/time-okami/time-okami.conf" ~/.conky/Okami-Time/Okami-Time
   ```
 
 ---
@@ -71,7 +71,7 @@ To make Conky start automatically when you log into Cinnamon:
   ```ini
   [Desktop Entry]
   Type=Application
-  Exec=/bin/bash -c "sleep 8 && '/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/widgets/time-okami/start.sh'"
+  Exec=/bin/bash -c "sleep 8 && '/path/to/conky-widgets/widgets/time-okami/start.sh'"
   Hidden=false
   NoDisplay=false
   X-GNOME-Autostart-enabled=true
@@ -90,7 +90,7 @@ Run this single command to diagnose your setup in 3 seconds:
 ```bash
 echo "=== 1. Process Check ===" && pgrep -a conky && \
 echo "=== 2. Font Check ===" && fc-match "Okami" && \
-echo "=== 3. Syntax Dry Run ===" && conky -c "/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/widgets/time-okami/time-okami.conf" -i 1
+echo "=== 3. Syntax Dry Run ===" && conky -c "./widgets/time-okami/time-okami.conf" -i 1
 ```
 
 If any step outputs an error, check the specific section below.
@@ -108,7 +108,7 @@ If any step outputs an error, check the specific section below.
 1. **Run in Foreground with Debugging**:
    Never rely only on background scripts when debugging. Run Conky in the foreground:
    ```bash
-   conky -c "/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/widgets/time-okami/time-okami.conf" -D
+   conky -c "./widgets/time-okami/time-okami.conf" -D
    ```
    - If there is a Lua syntax error (e.g. missing comma, unmatched bracket), Conky will print the exact line number.
    - `-D` prints detailed debug information about window creation, XFT, and geometry.
@@ -134,7 +134,8 @@ If any step outputs an error, check the specific section below.
    ```
    If nothing is returned, install the font:
    ```bash
-   cp "/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky/fonts/Okami.otf" ~/.local/share/fonts/
+   cp "fonts/Okami.otf" ~/.local/share/fonts/
+   # or run: ./scripts/install_fonts.sh
    fc-cache -fv ~/.local/share/fonts
    ```
 
@@ -238,7 +239,7 @@ killall -9 conky 2>/dev/null || true
 fc-cache -f ~/.local/share/fonts
 
 # 3. Launch Okami Time Widget cleanly
-cd "/mnt/BA72ED5A72ED1C3F/VS Code Projects/conky"
+cd "/path/to/conky-widgets"
 ./widgets/time-okami/start.sh
 
 # 4. Verify it is running
