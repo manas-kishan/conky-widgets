@@ -4,14 +4,16 @@ A modular, modern suite of custom Conky desktop widgets designed with high-impac
 
 Currently featuring the **Okami Time Widget**, rendered with the artistic Japanese brush font **Okami**.
 
+![Conky Okami Widgets Showcase](assets/showcase.png)
+
 ---
 
 ## 📸 Preview & Layouts
 
-- **Inline Minimalist Layout** (`time-okami.conf`):
-  Large textured brush time digits with day of week and full date.
-- **Vertical Stacked Layout** (`time-okami-stacked.conf`):
-  Stacked hours and minutes with color-coded accent styling.
+| **Inline Minimalist Layout** (`time-okami.conf`) | **Vertical Stacked Layout** (`time-okami-stacked.conf`) |
+| :---: | :---: |
+| <img src="assets/preview-inline.png" alt="Inline Layout" width="500"/> | <img src="assets/preview-stacked.png" alt="Stacked Layout" width="300"/> |
+| Horizontal brush clock with weekday and full date. | Compact stacked hours and minutes with crimson accent. |
 
 ---
 
@@ -93,6 +95,7 @@ To launch the vertical stacked layout instead:
 
 ```text
 conky-widgets/
+├── assets/                           # Layout screenshots and showcase preview
 ├── fonts/
 │   └── Okami.otf                     # Bundled Okami brush font
 ├── scripts/
