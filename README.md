@@ -2,7 +2,7 @@
 
 A minimalist, modular desktop widget suite for Linux featuring the Japanese brush font **Okami**.
 
-## 📸 Showcase & Layouts
+## 📸 Layouts
 
 ### Clock Variants
 | 12-Hour Horizontal (Default) | 12-Hour Vertical | 24-Hour Horizontal | 24-Hour Vertical |
