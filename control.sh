@@ -197,22 +197,52 @@ start_widget() {
         return 1
     fi
 
-    # Check for start.sh script first
-    if [ -x "$widget_dir/start.sh" ]; then
-        echo "[+] Launching $target via start.sh..."
-        "$widget_dir/start.sh"
-        return 0
+    # Verify Okami font is registered in fontconfig
+    if ! fc-list : family 2>/dev/null | grep -qi "Okami"; then
+        echo "[!] Notice: Okami font not detected in system font cache."
+        echo "    Download link: https://www.fontshut.com/okami-font/"
     fi
 
-    # Fallback: look for .conf files
+    # Prepare calendar helper script in ~/.config/conky if needed
+    if [ "$target" = "calendar" ] && [ -f "$widget_dir/okami-calendar.lua" ]; then
+        mkdir -p "$HOME/.config/conky"
+        ln -sf "$widget_dir/okami-calendar.lua" "$HOME/.config/conky/okami-calendar.lua"
+    fi
+
     local conf
     conf=$(find "$widget_dir" -maxdepth 1 -name "*.conf" | head -n 1)
-    if [ -n "$conf" ]; then
-        echo "[+] Launching $target with config $(basename "$conf")..."
-        nohup conky -c "$conf" >/dev/null 2>&1 &
-        echo "[+] $target started (PID: $!)."
-    else
+    if [ -z "$conf" ]; then
         echo "[-] No configuration file found in $widget_dir" >&2
+        return 1
+    fi
+
+    # Stop any currently running instance of this widget
+    stop_widget "$target" >/dev/null 2>&1 || true
+
+    local mode="default"
+    if [ "$target" = "clock" ]; then
+        if [ -f "$HOME/.config/conky/clock.mode" ]; then
+            mode="$(cat "$HOME/.config/conky/clock.mode")"
+        elif [ -f "$HOME/.config/conky/clock-okami.mode" ]; then
+            mode="$(cat "$HOME/.config/conky/clock-okami.mode")"
+        fi
+    elif [ "$target" = "calendar" ]; then
+        if [ -f "$HOME/.config/conky/calendar.mode" ]; then
+            mode="$(cat "$HOME/.config/conky/calendar.mode")"
+        elif [ -f "$HOME/.config/conky/calendar-okami.mode" ]; then
+            mode="$(cat "$HOME/.config/conky/calendar-okami.mode")"
+        fi
+    fi
+
+    echo "==> Starting Conky with: $(basename "$conf") (Mode: $mode)..."
+    setsid conky -c "$conf" </dev/null >/dev/null 2>&1 &
+
+    sleep 0.5
+    if pgrep -f "conky -c .*$(basename "$conf")" >/dev/null; then
+        echo "[+] Okami $(tr '[:lower:]' '[:upper:]' <<< ${target:0:1})${target:1} Widget is running successfully!"
+    else
+        echo "[-] Failed to start Conky for $target. Running in foreground to check error:"
+        conky -c "$conf" -i 1
         return 1
     fi
 }
@@ -220,16 +250,14 @@ start_widget() {
 stop_widget() {
     local target
     target="$(resolve_widget "$1")"
-    local widget_dir="$WIDGETS_DIR/$target"
-
-    if [ -x "$widget_dir/stop.sh" ]; then
-        echo "[+] Stopping $target via stop.sh..."
-        "$widget_dir/stop.sh"
-        return 0
+    echo "==> Stopping Okami $target widget..."
+    if pgrep -f "conky -c .*($target\.conf|$target-okami)" >/dev/null; then
+        pkill -f "conky -c .*($target\.conf|$target-okami)"
+        sleep 0.3
+        echo "[+] $target widget stopped."
+    else
+        echo "[!] No running Okami $target instances detected."
     fi
-
-    echo "[+] Terminating conky instances matching $target..."
-    pkill -f "conky -c .*$target" 2>/dev/null || echo "[!] No running process found for $target"
 }
 
 status_widgets() {
@@ -302,7 +330,7 @@ tweak_clock() {
     # Restart clock widget if currently running
     if pgrep -f "conky -c .*(clock\.conf|clock-okami)" >/dev/null; then
         echo "==> Applying changes to running widget..."
-        "$widget_dir/start.sh"
+        start_widget "clock"
     fi
 }
 
@@ -363,7 +391,7 @@ tweak_calendar() {
     # Restart calendar widget if currently running
     if pgrep -f "conky -c .*(calendar\.conf|calendar-okami)" >/dev/null; then
         echo "==> Applying changes to running widget..."
-        "$widget_dir/start.sh"
+        start_widget "calendar"
     fi
 }
 

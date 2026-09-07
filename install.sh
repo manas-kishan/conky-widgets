@@ -86,7 +86,6 @@ fi
 # 3. Setup permissions on all scripts
 echo "[3/5] Setting executable permissions..."
 chmod +x "$REPO_ROOT/control.sh" "$REPO_ROOT/install.sh"
-chmod +x "$REPO_ROOT/widgets/"*/*.sh 2>/dev/null || true
 echo "[+] Script permissions set."
 
 # 4. Initialize Conky user configuration
