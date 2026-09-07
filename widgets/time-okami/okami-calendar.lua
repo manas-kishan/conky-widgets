@@ -1,29 +1,10 @@
-require 'cairo'
-
-local home = os.getenv("HOME") or ""
-local assets_dir = home .. "/.config/conky/time-okami-assets/"
-
-function conky_draw_rotated_day()
-    if conky_window == nil then return end
-    local cs = cairo_xlib_surface_create(conky_window.display, conky_window.drawable, conky_window.visual, conky_window.width, conky_window.height)
-    local cr = cairo_create(cs)
-    
-    local day = conky_parse("${time %A}")
-    local img_path = assets_dir .. day .. ".png"
-    
-    local img = cairo_image_surface_create_from_png(img_path)
-    if img ~= nil then
-        cairo_save(cr)
-        -- Positioned cleanly without clipping, gently overlapping the clock digit
-        cairo_set_source_surface(cr, img, 8, 42)
-        cairo_paint(cr)
-        cairo_restore(cr)
-        cairo_surface_destroy(img)
-    end
-    
-    cairo_destroy(cr)
-    cairo_surface_destroy(cs)
-end
+--[[
+# ==============================================================================
+# Script: okami-calendar.lua
+# Description: Generates a vertical date column (01..31) for the current month
+# Colors: Slate grey for past, crimson for today, off-white for upcoming
+# ==============================================================================
+]]
 
 function conky_date_column()
     local today = tonumber(os.date("%d"))

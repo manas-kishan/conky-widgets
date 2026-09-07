@@ -18,14 +18,10 @@ fi
 
 CONFIG_FILE="$SCRIPT_DIR/time-okami.conf"
 
-if [ ! -d "$SCRIPT_DIR/assets/days" ]; then
-    python3 "$SCRIPT_DIR/generate_days.py"
-fi
-
-# Prepare Cairo Lua hook and rotated assets in ~/.config/conky
+# Prepare Lua script in ~/.config/conky
 mkdir -p "$HOME/.config/conky"
-ln -sf "$SCRIPT_DIR/okami-rotate.lua" "$HOME/.config/conky/okami-rotate.lua"
-ln -sfn "$SCRIPT_DIR/assets/days" "$HOME/.config/conky/time-okami-assets"
+ln -sf "$SCRIPT_DIR/okami-calendar.lua" "$HOME/.config/conky/okami-calendar.lua"
+rm -f "$HOME/.config/conky/okami-rotate.lua" "$HOME/.config/conky/time-okami-assets"
 
 if [[ "${1:-}" == "--stacked" || "${1:-}" == "-s" ]]; then
     CONFIG_FILE="$SCRIPT_DIR/time-okami-stacked.conf"

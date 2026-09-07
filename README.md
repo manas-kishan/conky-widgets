@@ -105,9 +105,9 @@ conky-widgets/
 │   └── time-okami/
 │       ├── time-okami.conf           # Primary inline configuration
 │       ├── time-okami-stacked.conf   # Vertical stacked configuration
+│       ├── okami-calendar.lua        # Vertical date column Lua script
 │       ├── start.sh                  # Widget launcher (supports --stacked)
 │       └── stop.sh                   # Widget terminator
-├── TROUBLESHOOTING.md                # Detailed troubleshooting & placement guide
 └── README.md
 ```
 
@@ -215,7 +215,12 @@ The project structure is built to scale modularly:
 
 ## 🔧 Troubleshooting
 
-If you encounter font rendering issues, transparency glitches (solid black boxes), or window stacking problems, refer to the in-depth [TROUBLESHOOTING.md](TROUBLESHOOTING.md) guide.
+- **Font not showing properly?** Re-run `./scripts/install_fonts.sh` to refresh the fontconfig cache.
+- **Widget not launching?** Run Conky in the foreground to view any errors:
+  ```bash
+  conky -c "./widgets/time-okami/time-okami.conf" -i 1
+  ```
+- **Transparency / compositor issues?** Ensure your desktop compositor is enabled, and verify `own_window_transparent = false` and `own_window_argb_visual = true` in the configuration.
 
 ---
 
