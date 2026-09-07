@@ -2,6 +2,7 @@
 # ==============================================================================
 # Script: okami-calendar.lua
 # Description: Generates calendar dates (vertical column or 7-column grid)
+# Column positions: left (under month) or right (under weekday)
 # Colors: Slate grey (past), crimson (today), off-white (upcoming)
 # ==============================================================================
 ]]
@@ -51,23 +52,41 @@ function conky_calendar_grid()
     return table.concat(lines, "\n")
 end
 
-function conky_calendar_column()
+function conky_calendar_column(pos)
     local today = tonumber(os.date("%d"))
     local year = tonumber(os.date("%Y"))
     local month = tonumber(os.date("%m"))
     local days_in_month = os.date("*t", os.time{year=year, month=month+1, day=0}).day
-    
+
+    pos = pos and string.lower(pos) or ""
+    if pos == "" then
+        local home = os.getenv("HOME") or ""
+        local mode_file = home .. "/.config/conky/calendar.mode"
+        local f = io.open(mode_file, "r")
+        if f then
+            local line = f:read("*l")
+            if line and line:match("%S") then
+                pos = line:match("^%s*(.-)%s*$"):lower()
+            end
+            f:close()
+        end
+    end
+
+    local is_right = (pos == "right" or pos == "r" or pos == "col-right" or pos == "col-r" or pos == "vertical-right")
+    local x_tag = is_right and "${goto 328}" or "${offset 18}"
+
     local lines = {}
     for d = 1, days_in_month do
         local d_str = string.format("%02d", d)
-        local line
+        local color
         if d < today then
-            line = string.format("${offset 18}${color3}${font Okami:size=13}%s${font}", d_str)
+            color = "${color3}"
         elseif d == today then
-            line = string.format("${offset 18}${color1}${font Okami:size=13}%s${font}", d_str)
+            color = "${color1}"
         else
-            line = string.format("${offset 18}${color2}${font Okami:size=13}%s${font}", d_str)
+            color = "${color2}"
         end
+        local line = string.format("%s%s${font Okami:size=13}%s${font}", x_tag, color, d_str)
         if d > 1 then
             line = "${voffset -7}" .. line
         end

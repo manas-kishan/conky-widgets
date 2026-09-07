@@ -33,17 +33,18 @@ usage() {
     echo "Usage: $(basename "$0") <command> [widget] [options]"
     echo ""
     echo "Commands & Shortcuts:"
-    echo "  st,   start   [clo|cal|sys]     Start widget (or all if omitted)"
-    echo "  sp,   stop    [clo|cal|sys]     Stop widget (or all if omitted)"
-    echo "  rs,   restart [clo|cal|sys]     Restart widget (or all if omitted)"
-    echo "  twk,  tweak   [widget] [mode]   Customize widget layout/format"
-    echo "  stat, status                    Show running conky widgets"
-    echo "  ls,   list                      List available widgets"
+    echo "  st,   start   [clo|cal|sys|stats] Start widget (or all if omitted)"
+    echo "  sp,   stop    [clo|cal|sys|stats] Stop widget (or all if omitted)"
+    echo "  rs,   restart [clo|cal|sys|stats] Restart widget (or all if omitted)"
+    echo "  twk,  tweak   [widget] [mode]     Customize widget layout/format"
+    echo "  stat, status                      Show running conky widgets"
+    echo "  ls,   list                        List available widgets"
     echo ""
     echo "Widget Aliases:"
     echo "  clo, clock       -> Clock widget"
     echo "  cal, calendar    -> Calendar widget"
     echo "  sys, system      -> System Identity widget"
+    echo "  stats, res       -> System Stats widget (CPU, RAM, Disk)"
     echo ""
     echo "Clock Layouts (Shortcodes):"
     echo "  12h-h            -> 12-Hour Horizontal (Inline) [Default]"
@@ -53,7 +54,8 @@ usage() {
     echo ""
     echo "Calendar Layouts (Shortcodes):"
     echo "  grid, row        -> 7 numbers per row left-to-right grid [Default]"
-    echo "  col,  vertical   -> Vertical column (01..31)"
+    echo "  col-left, col-l  -> Vertical column on Left side (under month)"
+    echo "  col-right, col-r -> Vertical column on Right side (under weekday)"
     echo ""
     echo "System Identity Styles (Shortcodes):"
     echo "  katana           -> Layered Katana Slash (slash cuts over right word) [Default]"
@@ -76,6 +78,7 @@ usage() {
     echo "  $(basename "$0") sys katana                  # System: Katana cut slash"
     echo "  $(basename "$0") sys clean                   # System: Clean inline slash"
     echo "  $(basename "$0") sys LONE WOLF               # System: Set custom words"
+    echo "  $(basename "$0") st stats                    # Start System Stats widget"
     echo "  $(basename "$0") 12h-v grid                  # Tweak both widgets directly"
     echo "  $(basename "$0") preset stacked              # Apply dual-stacked preset"
     echo "  $(basename "$0") twk                         # Interactive tweak menu"
@@ -111,13 +114,13 @@ resolve_action() {
         compact|tech|stacked|stacked-24h|all-vertical|grid-12h|grid-24h)
             echo "direct_preset"
             ;;
-        clo|clock|clock-okami|cal|calendar|calendar-okami|sys|system)
+        clo|clock|clock-okami|cal|calendar|calendar-okami|sys|system|stats|sysstats|res|resources)
             echo "direct_widget"
             ;;
         12h-h|12h-v|24h-h|24h-v|12h-horizontal|12h-vertical|24h-horizontal|24h-vertical|horizontal)
             echo "direct_clock_mode"
             ;;
-        grid|grid-7|col|column|row)
+        grid|grid-7|col|column|row|col-left|col-right|col-l|col-r)
             echo "direct_cal_mode"
             ;;
         *)
@@ -138,6 +141,9 @@ resolve_widget() {
             ;;
         sys|system|s)
             echo "system"
+            ;;
+        stats|sysstats|res|resources)
+            echo "stats"
             ;;
         all|"")
             echo ""
@@ -177,8 +183,11 @@ resolve_calendar_mode() {
         1|grid|row|g|h|horizontal|grid-7|7)
             echo "grid"
             ;;
-        2|col|column|v|vertical|list)
-            echo "vertical"
+        2|col-left|col-l|col|column|v|vertical|list|left|l)
+            echo "col-left"
+            ;;
+        3|col-right|col-r|right|r)
+            echo "col-right"
             ;;
         *)
             echo "$mode"
@@ -196,6 +205,7 @@ list_widgets() {
             [ "$name" = "clock" ] && short="[alias: clo]"
             [ "$name" = "calendar" ] && short="[alias: cal]"
             [ "$name" = "system" ] && short="[alias: sys]"
+            [ "$name" = "stats" ] && short="[alias: stats, res]"
             echo "  - $name $short (configs: ${configs:-none})"
         fi
     done
@@ -248,6 +258,10 @@ start_widget() {
         fi
     elif [ "$target" = "system" ]; then
         mode="$(hostname 2>/dev/null || echo "hostname")"
+    elif [ "$target" = "stats" ]; then
+        if [ -f "$HOME/.config/conky/stats.mode" ]; then
+            mode="$(cat "$HOME/.config/conky/stats.mode")"
+        fi
     fi
 
     echo "==> Starting Conky with: $(basename "$conf") (Mode: $mode)..."
@@ -357,6 +371,11 @@ tweak_calendar() {
     local widget_dir="$WIDGETS_DIR/calendar"
     mkdir -p "$HOME/.config/conky"
 
+    # Support sub-arguments like: ./control.sh cal col left / right
+    if [[ ("$choice" == "col" || "$choice" == "column" || "$choice" == "vertical") && -n "${2:-}" ]]; then
+        choice="col-${2}"
+    fi
+
     if [ -z "$choice" ]; then
         local current="grid"
         if [ -f "$mode_file" ]; then
@@ -371,11 +390,12 @@ tweak_calendar() {
         echo "Current mode: $current"
         echo ""
         echo "Select a calendar layout:"
-        echo "  1) grid : 7 numbers per row left-to-right grid [Default]"
-        echo "  2) col  : Vertical Column [01..31]"
+        echo "  1) grid      : 7 numbers per row left-to-right grid [Default]"
+        echo "  2) col-left  : Vertical Column on Left side (under month) [col-l]"
+        echo "  3) col-right : Vertical Column on Right side (under weekday) [col-r]"
         echo "  q) Quit without changing"
         echo ""
-        read -rp "Enter choice [1-2 / grid / col]: " choice
+        read -rp "Enter choice [1-3 / grid / col-left / col-right]: " choice
     fi
 
     local selected
@@ -383,8 +403,11 @@ tweak_calendar() {
     local desc=""
 
     case "$selected" in
-        vertical)
-            desc="Vertical Column (01..31) [col]"
+        col-left)
+            desc="Vertical Column on Left (under month) [col-left]"
+            ;;
+        col-right)
+            desc="Vertical Column on Right (under weekday) [col-right]"
             ;;
         grid)
             desc="7-Day Grid (Left-to-right) [grid]"
@@ -395,7 +418,7 @@ tweak_calendar() {
             ;;
         *)
             echo "[-] Error: Unknown calendar mode '$choice'"
-            echo "Valid modes: col (vertical), grid (7 numbers per row)"
+            echo "Valid modes: grid, col-left (or col-l), col-right (or col-r)"
             return 1
             ;;
     esac
@@ -505,6 +528,17 @@ tweak_system() {
     fi
 }
 
+tweak_stats() {
+    echo "[+] Okami System Stats uses a unified minimalist inline layout."
+    if pgrep -f "conky -c .*stats\.conf" >/dev/null; then
+        echo "==> Reloading running widget..."
+        start_widget "stats"
+    else
+        echo "==> Starting widget..."
+        start_widget "stats"
+    fi
+}
+
 apply_preset() {
     local name="${1:-}"
     case "$name" in
@@ -551,10 +585,11 @@ tweak_widget() {
         echo "  1) clo     : Okami Clock (12h-h, 12h-v, 24h-h, 24h-v)"
         echo "  2) cal     : Okami Calendar (grid, col)"
         echo "  3) sys     : Okami System Identity (katana, clean, none, text)"
-        echo "  4) preset  : Choose a layout preset combo"
+        echo "  4) stats   : Okami System Stats (Reload)"
+        echo "  5) preset  : Choose a layout preset combo"
         echo "  q) Quit"
         echo ""
-        read -rp "Enter choice [1-4]: " ans
+        read -rp "Enter choice [1-5]: " ans
         case "$ans" in
             1|clo|clock)
                 tweak_clock
@@ -565,7 +600,10 @@ tweak_widget() {
             3|sys|system)
                 tweak_system
                 ;;
-            4|preset|presets)
+            4|stats|res|resources)
+                tweak_stats
+                ;;
+            5|preset|presets)
                 echo ""
                 echo "Select a preset combo:"
                 echo "  1) compact     : 12h Horizontal Clock + 7-Day Grid Calendar [Default]"
@@ -609,7 +647,7 @@ tweak_widget() {
 
         case "$target" in
             clock)
-                if [ $# -gt 1 ] && [[ "$2" != "cal" && "$2" != "calendar" && "$2" != "clo" && "$2" != "clock" && "$2" != "sys" && "$2" != "system" ]]; then
+                if [ $# -gt 1 ] && [[ "$2" != "cal" && "$2" != "calendar" && "$2" != "clo" && "$2" != "clock" && "$2" != "sys" && "$2" != "system" && "$2" != "stats" && "$2" != "res" ]]; then
                     tweak_clock "$2"
                     shift 2
                 else
@@ -618,7 +656,10 @@ tweak_widget() {
                 fi
                 ;;
             calendar)
-                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" ]]; then
+                if [ $# -gt 2 ] && [[ "$2" == "col" || "$2" == "column" || "$2" == "vertical" ]] && [[ "$3" == "left" || "$3" == "right" || "$3" == "l" || "$3" == "r" ]]; then
+                    tweak_calendar "col-$3"
+                    shift 3
+                elif [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" && "$2" != "stats" && "$2" != "res" ]]; then
                     tweak_calendar "$2"
                     shift 2
                 else
@@ -627,7 +668,7 @@ tweak_widget() {
                 fi
                 ;;
             system)
-                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" ]]; then
+                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" && "$2" != "stats" && "$2" != "res" ]]; then
                     if [ "$2" = "text" ] || [ "$2" = "name" ]; then
                         tweak_system "$2" "${3:-}" "${4:-}"
                         shift 4 2>/dev/null || shift $#
@@ -637,6 +678,15 @@ tweak_widget() {
                     fi
                 else
                     tweak_system ""
+                    shift 1
+                fi
+                ;;
+            stats)
+                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" && "$2" != "stats" && "$2" != "res" ]]; then
+                    tweak_stats "$2"
+                    shift 2
+                else
+                    tweak_stats ""
                     shift 1
                 fi
                 ;;
@@ -651,7 +701,7 @@ tweak_widget() {
                         tweak_clock "$token"
                         shift 1
                         ;;
-                    grid|grid-7|col|column|row)
+                    grid|grid-7|col|column|row|col-left|col-right|col-l|col-r)
                         tweak_calendar "$token"
                         shift 1
                         ;;
@@ -661,9 +711,9 @@ tweak_widget() {
                         ;;
                     *)
                         echo "[-] Error: Unknown widget, preset, or layout '$token'"
-                        echo "Available widgets: clo (clock), cal (calendar), sys (system)"
+                        echo "Available widgets: clo (clock), cal (calendar), sys (system), stats (system stats)"
                         echo "Clock layouts: 12h-h, 12h-v, 24h-h, 24h-v"
-                        echo "Calendar layouts: grid (7-day row), col (vertical column)"
+                        echo "Calendar layouts: grid (7-day row), col-left (left column), col-right (right column)"
                         echo "System styles: katana, clean, none, text <word1> <word2>"
                         echo "Presets: compact, stacked, tech, stacked-24h"
                         return 1
@@ -703,7 +753,7 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Starting all widgets..."
-            for w in clock calendar system; do
+            for w in clock calendar system stats; do
                 [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi
@@ -714,7 +764,7 @@ case "$ACTION" in
             stop_widget "$TARGET"
         else
             echo "Stopping all widgets managed by this repo..."
-            for w in system calendar clock; do
+            for w in stats system calendar clock; do
                 [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
         fi
@@ -727,11 +777,11 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Restarting all widgets..."
-            for w in system calendar clock; do
+            for w in stats system calendar clock; do
                 [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
             sleep 0.5
-            for w in clock calendar system; do
+            for w in clock calendar system stats; do
                 [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi
