@@ -5,7 +5,7 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 ## 📸 Showcase & Layouts
 
 ### Clock Variants
-| 12-Hour Horizontal (Default) | 12-Hour Vertical (Stacked) | 24-Hour Horizontal | 24-Hour Vertical |
+| 12-Hour Horizontal (Default) | 12-Hour Vertical | 24-Hour Horizontal | 24-Hour Vertical |
 | :---: | :---: | :---: | :---: |
 | <img src="assets/clock_12h-h.png" width="220" alt="Clock 12h-h"/> | <img src="assets/Clock_12h-v.png" width="100" alt="Clock 12h-v"/> | <img src="assets/clock_24h-h.png" width="220" alt="Clock 24h-h"/> | <img src="assets/Clock_24h-v.png" width="100" alt="Clock 24h-v"/> |
 
