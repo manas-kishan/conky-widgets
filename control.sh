@@ -33,16 +33,17 @@ usage() {
     echo "Usage: $(basename "$0") <command> [widget] [options]"
     echo ""
     echo "Commands & Shortcuts:"
-    echo "  st,   start   [clo|cal]         Start widget (or all if omitted)"
-    echo "  sp,   stop    [clo|cal]         Stop widget (or all if omitted)"
-    echo "  rs,   restart [clo|cal]         Restart widget (or all if omitted)"
-    echo "  twk,  tweak   [clo|cal] [mode]  Customize widget layout/format"
+    echo "  st,   start   [clo|cal|sys]     Start widget (or all if omitted)"
+    echo "  sp,   stop    [clo|cal|sys]     Stop widget (or all if omitted)"
+    echo "  rs,   restart [clo|cal|sys]     Restart widget (or all if omitted)"
+    echo "  twk,  tweak   [widget] [mode]   Customize widget layout/format"
     echo "  stat, status                    Show running conky widgets"
     echo "  ls,   list                      List available widgets"
     echo ""
     echo "Widget Aliases:"
     echo "  clo, clock       -> Clock widget"
     echo "  cal, calendar    -> Calendar widget"
+    echo "  sys, system      -> System Identity widget"
     echo ""
     echo "Clock Layouts (Shortcodes):"
     echo "  12h-h            -> 12-Hour Horizontal (Inline) [Default]"
@@ -53,6 +54,12 @@ usage() {
     echo "Calendar Layouts (Shortcodes):"
     echo "  grid, row        -> 7 numbers per row left-to-right grid [Default]"
     echo "  col,  vertical   -> Vertical column (01..31)"
+    echo ""
+    echo "System Identity Styles (Shortcodes):"
+    echo "  katana           -> Layered Katana Slash (slash cuts over right word) [Default]"
+    echo "  clean            -> Inline Slash (clean slash between words)"
+    echo "  none             -> Simple Text (clean words without slash)"
+    echo "  sys <w1> <w2>    -> Change display words (e.g. ./control.sh sys LONE WOLF)"
     echo ""
     echo "Multi-Widget Presets:"
     echo "  compact          -> 12h Horizontal Clock + 7-Day Grid Calendar [Default]"
@@ -66,6 +73,9 @@ usage() {
     echo "  $(basename "$0") cal col                     # Calendar: vertical column"
     echo "  $(basename "$0") clo 12h-h                   # Clock: 12h horizontal"
     echo "  $(basename "$0") clo 12h-v                   # Clock: 12h vertical"
+    echo "  $(basename "$0") sys katana                  # System: Katana cut slash"
+    echo "  $(basename "$0") sys clean                   # System: Clean inline slash"
+    echo "  $(basename "$0") sys LONE WOLF               # System: Set custom words"
     echo "  $(basename "$0") 12h-v grid                  # Tweak both widgets directly"
     echo "  $(basename "$0") preset stacked              # Apply dual-stacked preset"
     echo "  $(basename "$0") twk                         # Interactive tweak menu"
@@ -101,7 +111,7 @@ resolve_action() {
         compact|tech|stacked|stacked-24h|all-vertical|grid-12h|grid-24h)
             echo "direct_preset"
             ;;
-        clo|clock|clock-okami|cal|calendar|calendar-okami)
+        clo|clock|clock-okami|cal|calendar|calendar-okami|sys|system)
             echo "direct_widget"
             ;;
         12h-h|12h-v|24h-h|24h-v|12h-horizontal|12h-vertical|24h-horizontal|24h-vertical|horizontal)
@@ -125,6 +135,9 @@ resolve_widget() {
             ;;
         cal|calendar|calendar-okami)
             echo "calendar"
+            ;;
+        sys|system|s)
+            echo "system"
             ;;
         all|"")
             echo ""
@@ -182,6 +195,7 @@ list_widgets() {
             short=""
             [ "$name" = "clock" ] && short="[alias: clo]"
             [ "$name" = "calendar" ] && short="[alias: cal]"
+            [ "$name" = "system" ] && short="[alias: sys]"
             echo "  - $name $short (configs: ${configs:-none})"
         fi
     done
@@ -232,6 +246,8 @@ start_widget() {
         elif [ -f "$HOME/.config/conky/calendar-okami.mode" ]; then
             mode="$(cat "$HOME/.config/conky/calendar-okami.mode")"
         fi
+    elif [ "$target" = "system" ]; then
+        mode="$(hostname 2>/dev/null || echo "hostname")"
     fi
 
     echo "==> Starting Conky with: $(basename "$conf") (Mode: $mode)..."
@@ -395,6 +411,100 @@ tweak_calendar() {
     fi
 }
 
+tweak_system() {
+    local choice="${1:-}"
+    shift 1 2>/dev/null || true
+    local style_file="$HOME/.config/conky/system.style"
+    local text_file="$HOME/.config/conky/system.text"
+    mkdir -p "$HOME/.config/conky"
+
+    # Support custom words directly: e.g. ./control.sh sys text CYBER PUNK or ./control.sh sys CYBER PUNK
+    if [ "$choice" = "text" ] || [ "$choice" = "name" ] || [ $# -ge 1 ]; then
+        local w1=""
+        local w2=""
+        if [ "$choice" = "text" ] || [ "$choice" = "name" ]; then
+            w1="${1:-}"
+            w2="${2:-}"
+        else
+            w1="$choice"
+            w2="${1:-}"
+        fi
+        if [ -n "$w1" ] && [ -n "$w2" ]; then
+            echo "$w1 $w2" > "$text_file"
+            echo "[+] Okami System Identity words set to: '$w1 / $w2'"
+            if pgrep -f "conky -c .*system\.conf" >/dev/null; then
+                echo "==> Applying changes to running widget..."
+                start_widget "system"
+            fi
+            return 0
+        fi
+    fi
+
+    if [ -z "$choice" ]; then
+        local current="katana"
+        [ -f "$style_file" ] && current="$(cat "$style_file")"
+        local cur_text="LONE WOLF"
+        [ -f "$text_file" ] && cur_text="$(cat "$text_file")"
+
+        echo "=========================================="
+        echo "       ⛩️ Okami System Identity Tweak"
+        echo "=========================================="
+        echo "Current style : $current"
+        echo "Current words : $cur_text"
+        echo ""
+        echo "Select a slash style or action:"
+        echo "  1) katana : Layered Katana Slash (slash cuts over right word) [Default]"
+        echo "  2) clean  : Inline Slash (clean slash placed between words)"
+        echo "  3) none   : Simple Text (clean words without slash)"
+        echo "  4) text   : Change display words (e.g. custom name)"
+        echo "  q) Quit without changing"
+        echo ""
+        read -rp "Enter choice [1-4 / katana / clean / none / text]: " choice
+    fi
+
+    case "$choice" in
+        1|katana|layered|slash)
+            echo "katana" > "$style_file"
+            echo "[+] Okami System Identity style set to: Katana Cut (Layered)"
+            ;;
+        2|clean|inline)
+            echo "clean" > "$style_file"
+            echo "[+] Okami System Identity style set to: Inline Slash"
+            ;;
+        3|none|simple)
+            echo "none" > "$style_file"
+            echo "[+] Okami System Identity style set to: Simple Text"
+            ;;
+        4|text|name)
+            echo ""
+            read -rp "Enter word on left (e.g. LONE): " rw1
+            read -rp "Enter word on right (e.g. WOLF): " rw2
+            if [ -n "$rw1" ] && [ -n "$rw2" ]; then
+                echo "$rw1 $rw2" > "$text_file"
+                echo "[+] Okami System Identity words set to: '$rw1 / $rw2'"
+            else
+                echo "[-] Invalid words. Kept previous."
+                return 0
+            fi
+            ;;
+        q|Q)
+            echo "Cancelled."
+            return 0
+            ;;
+        *)
+            echo "[-] Error: Unknown system option '$choice'"
+            echo "Valid options: katana, clean, none, text"
+            return 1
+            ;;
+    esac
+
+    # Restart system widget if running
+    if pgrep -f "conky -c .*system\.conf" >/dev/null; then
+        echo "==> Applying changes to running widget..."
+        start_widget "system"
+    fi
+}
+
 apply_preset() {
     local name="${1:-}"
     case "$name" in
@@ -440,10 +550,11 @@ tweak_widget() {
         echo "Select a widget or preset to tweak:"
         echo "  1) clo     : Okami Clock (12h-h, 12h-v, 24h-h, 24h-v)"
         echo "  2) cal     : Okami Calendar (grid, col)"
-        echo "  3) preset  : Choose a layout preset combo"
+        echo "  3) sys     : Okami System Identity (katana, clean, none, text)"
+        echo "  4) preset  : Choose a layout preset combo"
         echo "  q) Quit"
         echo ""
-        read -rp "Enter choice [1-3]: " ans
+        read -rp "Enter choice [1-4]: " ans
         case "$ans" in
             1|clo|clock)
                 tweak_clock
@@ -451,7 +562,10 @@ tweak_widget() {
             2|cal|calendar)
                 tweak_calendar
                 ;;
-            3|preset|presets)
+            3|sys|system)
+                tweak_system
+                ;;
+            4|preset|presets)
                 echo ""
                 echo "Select a preset combo:"
                 echo "  1) compact     : 12h Horizontal Clock + 7-Day Grid Calendar [Default]"
@@ -495,7 +609,7 @@ tweak_widget() {
 
         case "$target" in
             clock)
-                if [ $# -gt 1 ] && [[ "$2" != "cal" && "$2" != "calendar" && "$2" != "clo" && "$2" != "clock" ]]; then
+                if [ $# -gt 1 ] && [[ "$2" != "cal" && "$2" != "calendar" && "$2" != "clo" && "$2" != "clock" && "$2" != "sys" && "$2" != "system" ]]; then
                     tweak_clock "$2"
                     shift 2
                 else
@@ -504,11 +618,25 @@ tweak_widget() {
                 fi
                 ;;
             calendar)
-                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" ]]; then
+                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" ]]; then
                     tweak_calendar "$2"
                     shift 2
                 else
                     tweak_calendar ""
+                    shift 1
+                fi
+                ;;
+            system)
+                if [ $# -gt 1 ] && [[ "$2" != "clo" && "$2" != "clock" && "$2" != "cal" && "$2" != "calendar" && "$2" != "sys" && "$2" != "system" ]]; then
+                    if [ "$2" = "text" ] || [ "$2" = "name" ]; then
+                        tweak_system "$2" "${3:-}" "${4:-}"
+                        shift 4 2>/dev/null || shift $#
+                    else
+                        tweak_system "$2" "${3:-}"
+                        shift 2
+                    fi
+                else
+                    tweak_system ""
                     shift 1
                 fi
                 ;;
@@ -527,11 +655,16 @@ tweak_widget() {
                         tweak_calendar "$token"
                         shift 1
                         ;;
+                    katana|clean|slash)
+                        tweak_system "$token"
+                        shift 1
+                        ;;
                     *)
                         echo "[-] Error: Unknown widget, preset, or layout '$token'"
-                        echo "Available widgets: clo (clock), cal (calendar)"
+                        echo "Available widgets: clo (clock), cal (calendar), sys (system)"
                         echo "Clock layouts: 12h-h, 12h-v, 24h-h, 24h-v"
                         echo "Calendar layouts: grid (7-day row), col (vertical column)"
+                        echo "System styles: katana, clean, none, text <word1> <word2>"
                         echo "Presets: compact, stacked, tech, stacked-24h"
                         return 1
                         ;;
@@ -570,7 +703,7 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Starting all widgets..."
-            for w in clock calendar; do
+            for w in clock calendar system; do
                 [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi
@@ -581,7 +714,7 @@ case "$ACTION" in
             stop_widget "$TARGET"
         else
             echo "Stopping all widgets managed by this repo..."
-            for w in calendar clock; do
+            for w in system calendar clock; do
                 [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
         fi
@@ -594,11 +727,11 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Restarting all widgets..."
-            for w in calendar clock; do
+            for w in system calendar clock; do
                 [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
             sleep 0.5
-            for w in clock calendar; do
+            for w in clock calendar system; do
                 [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi

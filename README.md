@@ -14,6 +14,11 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 | :---: | :---: |
 | <img src="assets/calendar_grid.png" width="320" alt="Calendar Grid"/> | <img src="assets/calendar_column.png" width="160" alt="Calendar Column"/> |
 
+### System Identity
+| Hostname & OS Banner |
+| :---: |
+| <img src="assets/system_identity.png" width="300" alt="System Identity"/> |
+
 ---
 
 ## ⚡ Quick Start
@@ -38,8 +43,8 @@ Manage everything from the root `./control.sh` script:
 ### Common Commands
 | Action | Command | Description |
 | :--- | :--- | :--- |
-| **Start** | `./control.sh st` | Start all widgets (`st clo` or `st cal` for single) |
-| **Stop** | `./control.sh sp` | Stop all widgets (`sp clo` or `sp cal` for single) |
+| **Start** | `./control.sh st` | Start all widgets (`st clo`, `st cal`, `st sys`) |
+| **Stop** | `./control.sh sp` | Stop all widgets (`sp clo`, `sp cal`, `sp sys`) |
 | **Restart** | `./control.sh rs` | Reload / apply config changes |
 | **Status** | `./control.sh stat` | Check running Conky processes |
 | **Interactive** | `./control.sh twk` | Open guided tweak menu |
@@ -55,6 +60,12 @@ Manage everything from the root `./control.sh` script:
 # Calendar Variants (cal)
 ./control.sh cal grid              # 7-Day Row Grid (Default)
 ./control.sh cal col               # Vertical Column (01..31)
+
+# System Identity Variants (sys)
+./control.sh sys katana            # Katana Cut: Layered slash over text (Default)
+./control.sh sys clean             # Inline Slash: Clean slash between words
+./control.sh sys none              # Simple Text: Words without slash
+./control.sh sys text LONE WOLF    # Set custom words dynamically
 
 # Multi-Widget Presets & Combos
 ./control.sh compact              # Preset: 12h-h Clock + 7-Day Grid (Default)
@@ -72,13 +83,14 @@ Manage everything from the root `./control.sh` script:
 Each widget has a single configuration file:
 - **Clock**: `widgets/clock/clock.conf`
 - **Calendar**: `widgets/calendar/calendar.conf`
+- **System**: `widgets/system/system.conf`
 
 ### 1. Colors
-Edit the hex values in either `.conf` file:
+Edit the hex values in any `.conf` file:
 ```lua
-color1 = 'E63946',  -- Accent (AM/PM, weekday, today's date)
-color2 = 'F5F5F7',  -- Primary (clock digits, upcoming dates)
-color3 = '8D99AE',  -- Muted (month title, past dates)
+color1 = 'E63946',  -- Accent (AM/PM, weekday, today's date, system slash)
+color2 = 'F5F5F7',  -- Primary (clock digits, upcoming dates, hostname)
+color3 = '8D99AE',  -- Muted (month title, past dates, OS subtitle)
 ```
 
 ### 2. Positioning
@@ -95,12 +107,19 @@ Adjust screen placement inside `conky.config` in each file:
   gap_x     = 40,           -- Keep equal to clock to stay aligned flush
   gap_y     = 140,          -- Distance from top (140 puts it under the clock)
   ```
+- **System** (`widgets/system/system.conf`):
+  ```lua
+  alignment = 'top_middle', -- Centered at the top of the screen
+  gap_x     = 0,            -- Center anchor (no horizontal offset needed)
+  gap_y     = 0,            -- Sits flush at the absolute top of the screen
+  ```
 
 ### 3. Font Scaling
 Change sizes in `conky.text`:
 - **Clock digits**: `font Okami:size=120` (horizontal) or `size=84` (vertical)
 - **Month/Day banner**: `font Okami:size=28`
 - **Calendar numbers**: In `widgets/calendar/okami-calendar.lua` (`size=15` for grid, `size=13` for column)
+- **System hostname**: In `widgets/system/system.conf` (`pixelsize=64` for letters, `pixelsize=109` for crimson slash)
 
 > **Tip**: After editing any file, run `./control.sh rs` to reload changes immediately.
 
