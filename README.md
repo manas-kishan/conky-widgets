@@ -19,7 +19,7 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 ## ⚡ Quick Start
 
 ```bash
-# 1. Install dependencies (Debian/Ubuntu/Mint)
+# 1. Install system dependencies (Debian/Ubuntu/Mint)
 sudo apt install conky-all fontconfig git
 
 # 2. Clone & Install
@@ -27,7 +27,7 @@ git clone https://github.com/manas-kishan/conky-widgets.git
 cd conky-widgets
 ./install.sh
 ```
-> **Font Note**: Due to licensing, the font binary is not bundled. Download **Okami** for free (personal use) from [DaFont](https://www.dafont.com/okami.font) and place `Okami.otf` in `fonts/Okami.otf`. `./install.sh` will automatically register it!
+> ⛩️ **Font Requirement**: This widget uses the Japanese brush font **Okami** by Mehmet Reha Tugcu ([Tugcu Design Co.](https://www.behance.net/tu29c0)). Due to licensing, the font file is not bundled in this repo. Download it for free (personal use) from **[DaFont](https://www.dafont.com/okami.font)** or **[Behance](https://www.behance.net/gallery/42792625/Okami-Font)** and install it, or place `Okami.otf` in this folder before running `./install.sh`.
 
 ---
 
