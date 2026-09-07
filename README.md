@@ -27,7 +27,7 @@ git clone https://github.com/manas-kishan/conky-widgets.git
 cd conky-widgets
 ./install.sh
 ```
-> ⛩️ **Font Requirement**: This widget uses the Japanese brush font **Okami** by Mehmet Reha Tugcu ([Tugcu Design Co.](https://www.behance.net/tu29c0)). Due to licensing, the font file is not bundled in this repo. Download it for free (personal use) from **[DaFont](https://www.dafont.com/okami.font)** or **[Behance](https://www.behance.net/gallery/42792625/Okami-Font)** and install it, or place `Okami.otf` in this folder before running `./install.sh`.
+> ⛩️ **Font Requirement**: This widget uses the Japanese brush font **Okami**. Due to licensing, the font file is not bundled in this repo. Download it for free from **[FontsHut](https://www.fontshut.com/okami-font/)** and install it, or place `Okami.otf` in this folder before running `./install.sh`.
 
 ---
 

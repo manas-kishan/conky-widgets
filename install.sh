@@ -71,8 +71,8 @@ else
     else
         echo "[-] Notice: Okami font is not installed on your system."
         echo "    Due to font licensing, the binary is not bundled in this repo."
-        echo "    Please download 'Okami' (Free for Personal Use) from:"
-        echo "      👉 https://www.dafont.com/okami.font"
+        echo "    Please download 'Okami' from:"
+        echo "      👉 https://www.fontshut.com/okami-font/"
         echo "    Install it, or place 'Okami.otf' in this folder and re-run ./install.sh."
         echo ""
         read -rp "Continue setup anyway? [Y/n]: " cont_font

@@ -13,7 +13,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Verify Okami font is registered in fontconfig
 if ! fc-list : family | grep -qi "Okami"; then
     echo "[!] Notice: Okami font not detected in system font cache."
-    echo "    Download link: https://www.dafont.com/okami.font"
+    echo "    Download link: https://www.fontshut.com/okami-font/"
 fi
 
 ARG="${1:-}"
