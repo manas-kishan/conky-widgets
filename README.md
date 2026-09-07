@@ -15,7 +15,7 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 | <img src="assets/calendar_grid.png" width="320" alt="Calendar Grid"/> | <img src="assets/calendar_column.png" width="160" alt="Calendar Column"/> |
 
 ### System Identity
-| Hostname & OS Banner |
+| Hostname |
 | :---: |
 | <img src="assets/system_name.png" width="300" alt="System Identity"/> |
 
