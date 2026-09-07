@@ -2,7 +2,17 @@
 
 A minimalist, modular desktop widget suite for Linux featuring the Japanese brush font **Okami**.
 
-![Showcase](assets/showcase.png)
+## 📸 Showcase & Layouts
+
+### Clock Variants
+| 12-Hour Horizontal (Default) | 12-Hour Vertical (Stacked) | 24-Hour Horizontal | 24-Hour Vertical |
+| :---: | :---: | :---: | :---: |
+| <img src="assets/clock_12h-h.png" width="220" alt="Clock 12h-h"/> | <img src="assets/Clock_12h-v.png" width="100" alt="Clock 12h-v"/> | <img src="assets/clock_24h-h.png" width="220" alt="Clock 24h-h"/> | <img src="assets/Clock_24h-v.png" width="100" alt="Clock 24h-v"/> |
+
+### Calendar Variants
+| 7-Day Row Grid (Default) | Vertical Column (01..31) |
+| :---: | :---: |
+| <img src="assets/calendar_grid.png" width="320" alt="Calendar Grid"/> | <img src="assets/calendar_coloumn.png" width="160" alt="Calendar Column"/> |
 
 ---
 
@@ -37,14 +47,14 @@ Manage everything from the root `./control.sh` script:
 ### Layout Switching
 ```bash
 # Clock Variants (clo)
-./control.sh twk-- clo 12h-h       # 12-Hour Horizontal (Default)
-./control.sh twk-- clo 12h-v       # 12-Hour Vertical (Stacked)
-./control.sh twk-- clo 24h-h       # 24-Hour Horizontal (Inline)
-./control.sh twk-- clo 24h-v       # 24-Hour Vertical (Stacked)
+./control.sh clo 12h-h             # 12-Hour Horizontal (Default)
+./control.sh clo 12h-v             # 12-Hour Vertical (Stacked)
+./control.sh clo 24h-h             # 24-Hour Horizontal (Inline)
+./control.sh clo 24h-v             # 24-Hour Vertical (Stacked)
 
 # Calendar Variants (cal)
-./control.sh twk-- cal grid        # 7-Day Row Grid (Default)
-./control.sh twk-- cal col         # Vertical Column (01..31)
+./control.sh cal grid              # 7-Day Row Grid (Default)
+./control.sh cal col               # Vertical Column (01..31)
 
 # Tweak Both in One Command
 ./control.sh 12h-v grid            # Direct multi-tweak (Clock -> 12h-v, Cal -> Grid)

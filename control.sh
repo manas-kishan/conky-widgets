@@ -4,13 +4,16 @@
 # Description: Central control and customization manager for Conky widgets
 # Usage: ./control.sh [command] [widget] [options]
 # Shortcuts:
-#   ./control.sh twk-- clo 12h-h   (or: twk, tweak)
-#   ./control.sh twk-- cal grid    (or: twk-- cal col)
-#   ./control.sh st [clo|cal]      (or: start)
-#   ./control.sh sp [clo|cal]      (or: stop)
-#   ./control.sh rs [clo|cal]      (or: restart)
-#   ./control.sh stat              (or: status)
-#   ./control.sh ls                (or: list)
+#   ./control.sh cal grid          (or: ./control.sh grid)
+#   ./control.sh cal col           (or: ./control.sh col)
+#   ./control.sh clo 12h-h         (or: ./control.sh 12h-h)
+#   ./control.sh clo 12h-v         (or: ./control.sh 12h-v)
+#   ./control.sh 12h-v grid        (multi-widget tweak)
+#   ./control.sh st [clo|cal]      (start)
+#   ./control.sh sp [clo|cal]      (stop)
+#   ./control.sh rs [clo|cal]      (restart)
+#   ./control.sh stat              (status)
+#   ./control.sh ls                (list)
 # ==============================================================================
 
 set -euo pipefail
@@ -59,10 +62,13 @@ usage() {
     echo ""
     echo "Quick Examples:"
     echo "  $(basename "$0") st                          # Start all widgets"
-    echo "  $(basename "$0") twk-- clo 12h-v cal grid   # Tweak multiple widgets at once"
-    echo "  $(basename "$0") twk-- 12h-v grid           # Direct multi-layout tweak"
-    echo "  $(basename "$0") preset stacked             # Apply dual-stacked preset"
-    echo "  $(basename "$0") twk                        # Interactive tweak menu"
+    echo "  $(basename "$0") cal grid                    # Calendar: 7-day row grid"
+    echo "  $(basename "$0") cal col                     # Calendar: vertical column"
+    echo "  $(basename "$0") clo 12h-h                   # Clock: 12h horizontal"
+    echo "  $(basename "$0") clo 12h-v                   # Clock: 12h vertical"
+    echo "  $(basename "$0") 12h-v grid                  # Tweak both widgets directly"
+    echo "  $(basename "$0") preset stacked              # Apply dual-stacked preset"
+    echo "  $(basename "$0") twk                         # Interactive tweak menu"
     echo "  $(basename "$0") sp                          # Stop all widgets"
     exit 1
 }
@@ -91,6 +97,9 @@ resolve_action() {
             ;;
         preset|presets|--preset)
             echo "preset"
+            ;;
+        clo|clock|clock-okami|cal|calendar|calendar-okami)
+            echo "direct_widget"
             ;;
         12h-h|12h-v|24h-h|24h-v|12h-horizontal|12h-vertical|24h-horizontal|24h-vertical|horizontal|stacked)
             echo "direct_clock_mode"
@@ -380,7 +389,7 @@ apply_preset() {
             echo "  stacked-24h -> 24h-v (Clock) + col  (Calendar)"
             echo ""
             echo "Usage: ./control.sh preset <name>"
-            echo "   or: ./control.sh twk-- <clock-layout> <cal-layout>"
+            echo "   or: ./control.sh <clock-layout> <cal-layout>"
             ;;
     esac
 }
@@ -509,7 +518,7 @@ case "$ACTION" in
     preset)
         apply_preset "$@"
         ;;
-    direct_clock_mode|direct_cal_mode)
+    direct_widget|direct_clock_mode|direct_cal_mode)
         tweak_widget "$RAW_ACTION" "$@"
         ;;
     status)
