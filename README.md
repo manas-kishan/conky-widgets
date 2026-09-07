@@ -17,7 +17,7 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 ### System Identity
 | Hostname & OS Banner |
 | :---: |
-| <img src="assets/system_identity.png" width="300" alt="System Identity"/> |
+| <img src="assets/system_name.png" width="300" alt="System Identity"/> |
 
 ---
 
