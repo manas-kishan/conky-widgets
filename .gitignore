@@ -5,3 +5,10 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Font binaries (proprietary / licensing restrictions)
+fonts/*.otf
+fonts/*.ttf
+*.otf
+*.ttf
+!fonts/README.md

@@ -12,10 +12,15 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Verify Okami font is registered in fontconfig
 if ! fc-list : family | grep -qi "Okami"; then
-    echo "[!] Okami font not detected in font cache. Registering bundled font..."
-    mkdir -p "$HOME/.local/share/fonts"
-    cp -u "$REPO_ROOT/fonts"/*.otf "$HOME/.local/share/fonts/" 2>/dev/null || true
-    fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
+    if ls "$REPO_ROOT/fonts"/*.otf "$REPO_ROOT/fonts"/*.ttf >/dev/null 2>&1; then
+        echo "[!] Okami font not detected in cache. Installing from fonts/..."
+        mkdir -p "$HOME/.local/share/fonts"
+        cp -u "$REPO_ROOT/fonts"/*.otf "$REPO_ROOT/fonts"/*.ttf "$HOME/.local/share/fonts/" 2>/dev/null || true
+        fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
+    else
+        echo "[!] Warning: Okami font not detected on system or in $REPO_ROOT/fonts/."
+        echo "    Download link: https://www.dafont.com/okami.font (Place in fonts/Okami.otf)"
+    fi
 fi
 
 ARG="${1:-}"

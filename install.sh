@@ -44,20 +44,42 @@ else
     echo "[+] All system dependencies (conky, fontconfig) found!"
 fi
 
-# 2. Install bundled Okami fonts
-echo "[2/5] Installing bundled Okami fonts..."
-if [ -d "$FONT_SRC_DIR" ]; then
-    mkdir -p "$USER_FONT_DIR"
-    cp -u "$FONT_SRC_DIR"/*.otf "$FONT_SRC_DIR"/*.ttf "$USER_FONT_DIR"/ 2>/dev/null || true
-    fc-cache -f "$USER_FONT_DIR" >/dev/null 2>&1 || true
-
-    if fc-list : family | grep -qi "Okami"; then
-        echo "[+] Okami font successfully registered in font cache!"
-    else
-        echo "[!] Font copied to $USER_FONT_DIR. FontConfig cache refreshed."
-    fi
+# 2. Check & Install Okami Font
+echo "[2/5] Checking Okami font..."
+if fc-list : family | grep -qi "Okami"; then
+    echo "[+] Okami font is already installed and registered in font cache!"
 else
-    echo "[!] Warning: Font source directory not found at $FONT_SRC_DIR"
+    FONT_FOUND=false
+    for f in "$FONT_SRC_DIR"/*.otf "$FONT_SRC_DIR"/*.ttf; do
+        if [ -f "$f" ]; then
+            FONT_FOUND=true
+            break
+        fi
+    done
+
+    if [ "$FONT_FOUND" = true ]; then
+        mkdir -p "$USER_FONT_DIR"
+        cp -u "$FONT_SRC_DIR"/*.otf "$FONT_SRC_DIR"/*.ttf "$USER_FONT_DIR"/ 2>/dev/null || true
+        fc-cache -f "$USER_FONT_DIR" >/dev/null 2>&1 || true
+
+        if fc-list : family | grep -qi "Okami"; then
+            echo "[+] Okami font successfully installed and registered in font cache!"
+        else
+            echo "[!] Font copied to $USER_FONT_DIR. FontConfig cache refreshed."
+        fi
+    else
+        echo "[-] Notice: Okami font not found on system or in $FONT_SRC_DIR/"
+        echo "    Due to licensing restrictions, the font binary is not bundled in this repo."
+        echo "    Please download 'Okami' (Free for Personal Use) from:"
+        echo "      👉 https://www.dafont.com/okami.font"
+        echo "    Then place 'Okami.otf' into: $FONT_SRC_DIR/Okami.otf"
+        echo ""
+        read -rp "Continue installation anyway? [Y/n]: " cont_font
+        if [[ "$cont_font" =~ ^[Nn]$ ]]; then
+            echo "Installation paused. Re-run ./install.sh after placing Okami.otf in fonts/."
+            exit 0
+        fi
+    fi
 fi
 
 # 3. Setup permissions on all scripts

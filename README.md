@@ -27,7 +27,7 @@ git clone https://github.com/manas-kishan/conky-widgets.git
 cd conky-widgets
 ./install.sh
 ```
-> `./install.sh` automatically installs the bundled Okami font, configures user paths, and starts the widgets.
+> **Font Note**: Due to licensing, the font binary is not bundled. Download **Okami** for free (personal use) from [DaFont](https://www.dafont.com/okami.font) and place `Okami.otf` in `fonts/Okami.otf`. `./install.sh` will automatically register it!
 
 ---
 
