@@ -7,12 +7,12 @@ A minimalist, modular desktop widget suite for Linux featuring the Japanese brus
 ### Clock Variants
 | 12-Hour Horizontal (Default) | 12-Hour Vertical | 24-Hour Horizontal | 24-Hour Vertical |
 | :---: | :---: | :---: | :---: |
-| <img src="assets/clock_12h-h.png" width="220" alt="Clock 12h-h"/> | <img src="assets/Clock_12h-v.png" width="100" alt="Clock 12h-v"/> | <img src="assets/clock_24h-h.png" width="220" alt="Clock 24h-h"/> | <img src="assets/Clock_24h-v.png" width="100" alt="Clock 24h-v"/> |
+| <img src="assets/clock_12h-h.png" width="220" alt="Clock 12h-h"/> | <img src="assets/clock_12h-v.png" width="100" alt="Clock 12h-v"/> | <img src="assets/clock_24h-h.png" width="220" alt="Clock 24h-h"/> | <img src="assets/clock_24h-v.png" width="100" alt="Clock 24h-v"/> |
 
 ### Calendar Variants
 | 7-Day Row Grid (Default) | Vertical Column (01..31) |
 | :---: | :---: |
-| <img src="assets/calendar_grid.png" width="320" alt="Calendar Grid"/> | <img src="assets/calendar_coloumn.png" width="160" alt="Calendar Column"/> |
+| <img src="assets/calendar_grid.png" width="320" alt="Calendar Grid"/> | <img src="assets/calendar_column.png" width="160" alt="Calendar Column"/> |
 
 ---
 
@@ -56,11 +56,13 @@ Manage everything from the root `./control.sh` script:
 ./control.sh cal grid              # 7-Day Row Grid (Default)
 ./control.sh cal col               # Vertical Column (01..31)
 
-# Tweak Both in One Command
-./control.sh 12h-v grid            # Direct multi-tweak (Clock -> 12h-v, Cal -> Grid)
-./control.sh 12h-h col             # Direct multi-tweak (Clock -> 12h-h, Cal -> Column)
-./control.sh preset compact        # Preset: 12h-h Clock + 7-Day Grid (Default)
-./control.sh preset stacked        # Preset: 12h-v Clock + Vertical Column
+# Multi-Widget Presets & Combos
+./control.sh compact              # Preset: 12h-h Clock + 7-Day Grid (Default)
+./control.sh stacked              # Preset: 12h-v Clock + Vertical Column
+./control.sh tech                 # Preset: 24h-h Clock + 7-Day Grid
+./control.sh stacked-24h          # Preset: 24h-v Clock + Vertical Column
+./control.sh 12h-v grid           # Custom mix: 12h-v Clock + Grid Calendar
+./control.sh 12h-h col            # Custom mix: 12h-h Clock + Column Calendar
 ```
 
 ---
@@ -80,18 +82,25 @@ color3 = '8D99AE',  -- Muted (month title, past dates)
 ```
 
 ### 2. Positioning
-Adjust screen placement inside `conky.config`:
-```lua
-alignment = 'top_left',   -- Screen position (top_left, top_right, etc.)
-gap_x     = 40,           -- Margin from screen edge in pixels
-gap_y     = 140,          -- Vertical position (gap_y=140 places calendar below clock)
-```
+Adjust screen placement inside `conky.config` in each file:
+- **Clock** (`widgets/clock/clock.conf`):
+  ```lua
+  alignment = 'top_left',   -- Screen anchor (top_left, top_right, etc.)
+  gap_x     = 40,           -- Horizontal distance from screen edge (px)
+  gap_y     = 0,            -- Sits at the top of the screen
+  ```
+- **Calendar** (`widgets/calendar/calendar.conf`):
+  ```lua
+  alignment = 'top_left',   -- Match clock alignment
+  gap_x     = 40,           -- Keep equal to clock to stay aligned flush
+  gap_y     = 140,          -- Distance from top (140 puts it under the clock)
+  ```
 
 ### 3. Font Scaling
 Change sizes in `conky.text`:
 - **Clock digits**: `font Okami:size=120` (horizontal) or `size=84` (vertical)
 - **Month/Day banner**: `font Okami:size=28`
-- **Calendar numbers**: In `widgets/calendar/okami-calendar.lua` (`size=15` for grid)
+- **Calendar numbers**: In `widgets/calendar/okami-calendar.lua` (`size=15` for grid, `size=13` for column)
 
 > **Tip**: After editing any file, run `./control.sh rs` to reload changes immediately.
 

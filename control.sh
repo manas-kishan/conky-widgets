@@ -98,10 +98,13 @@ resolve_action() {
         preset|presets|--preset)
             echo "preset"
             ;;
+        compact|tech|stacked|stacked-24h|all-vertical|grid-12h|grid-24h)
+            echo "direct_preset"
+            ;;
         clo|clock|clock-okami|cal|calendar|calendar-okami)
             echo "direct_widget"
             ;;
-        12h-h|12h-v|24h-h|24h-v|12h-horizontal|12h-vertical|24h-horizontal|24h-vertical|horizontal|stacked)
+        12h-h|12h-v|24h-h|24h-v|12h-horizontal|12h-vertical|24h-horizontal|24h-vertical|horizontal)
             echo "direct_clock_mode"
             ;;
         grid|grid-7|col|column|row)
@@ -306,12 +309,17 @@ tweak_clock() {
 tweak_calendar() {
     local choice="${1:-}"
     local mode_file="$HOME/.config/conky/calendar.mode"
+    local mode_file_compat="$HOME/.config/conky/calendar-okami.mode"
     local widget_dir="$WIDGETS_DIR/calendar"
     mkdir -p "$HOME/.config/conky"
 
     if [ -z "$choice" ]; then
         local current="grid"
-        [ -f "$mode_file" ] && current="$(cat "$mode_file")"
+        if [ -f "$mode_file" ]; then
+            current="$(cat "$mode_file")"
+        elif [ -f "$mode_file_compat" ]; then
+            current="$(cat "$mode_file_compat")"
+        fi
 
         echo "=========================================="
         echo "       ⛩️ Okami Calendar Tweak Tool"
@@ -349,6 +357,7 @@ tweak_calendar() {
     esac
 
     echo "$selected" > "$mode_file"
+    echo "$selected" > "$mode_file_compat"
     echo "[+] Okami Calendar layout set to: $desc"
 
     # Restart calendar widget if currently running
@@ -476,18 +485,18 @@ tweak_widget() {
                 fi
                 ;;
             *)
-                # Check if token is a direct clock layout
+                # Check if token is a direct clock layout or preset
                 case "$token" in
-                    12h-h|12h-v|24h-h|24h-v|12h*|24h*|horizontal|stacked)
+                    compact|tech|stacked|stacked-24h)
+                        apply_preset "$token"
+                        shift 1
+                        ;;
+                    12h-h|12h-v|24h-h|24h-v|12h*|24h*|horizontal)
                         tweak_clock "$token"
                         shift 1
                         ;;
                     grid|grid-7|col|column|row)
                         tweak_calendar "$token"
-                        shift 1
-                        ;;
-                    compact|tech)
-                        apply_preset "$token"
                         shift 1
                         ;;
                     *)
@@ -518,6 +527,9 @@ case "$ACTION" in
     preset)
         apply_preset "$@"
         ;;
+    direct_preset)
+        apply_preset "$RAW_ACTION" "$@"
+        ;;
     direct_widget|direct_clock_mode|direct_cal_mode)
         tweak_widget "$RAW_ACTION" "$@"
         ;;
@@ -530,8 +542,8 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Starting all widgets..."
-            for dir in "$WIDGETS_DIR"/*/; do
-                [ -d "$dir" ] && start_widget "$(basename "$dir")"
+            for w in clock calendar; do
+                [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi
         ;;
@@ -541,8 +553,8 @@ case "$ACTION" in
             stop_widget "$TARGET"
         else
             echo "Stopping all widgets managed by this repo..."
-            for dir in "$WIDGETS_DIR"/*/; do
-                [ -d "$dir" ] && stop_widget "$(basename "$dir")"
+            for w in calendar clock; do
+                [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
         fi
         ;;
@@ -554,12 +566,12 @@ case "$ACTION" in
             start_widget "$TARGET"
         else
             echo "Restarting all widgets..."
-            for dir in "$WIDGETS_DIR"/*/; do
-                [ -d "$dir" ] && stop_widget "$(basename "$dir")"
+            for w in calendar clock; do
+                [ -d "$WIDGETS_DIR/$w" ] && stop_widget "$w"
             done
             sleep 0.5
-            for dir in "$WIDGETS_DIR"/*/; do
-                [ -d "$dir" ] && start_widget "$(basename "$dir")"
+            for w in clock calendar; do
+                [ -d "$WIDGETS_DIR/$w" ] && start_widget "$w"
             done
         fi
         ;;

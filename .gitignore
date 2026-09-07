@@ -9,3 +9,6 @@ Thumbs.db
 # Font binaries (proprietary / licensing restrictions)
 *.otf
 *.ttf
+
+# Runtime mode state
+*.mode

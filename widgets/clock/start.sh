@@ -62,7 +62,7 @@ echo "==> Starting Conky with: clock.conf (Mode: $MODE)..."
 setsid conky -c "$CONFIG_FILE" </dev/null >/dev/null 2>&1 &
 
 sleep 0.5
-if pgrep -f "conky -c .*clock\.conf" >/dev/null; then
+if pgrep -f "conky -c .*$(basename "$CONFIG_FILE")" >/dev/null; then
     echo "[+] Okami Clock Widget is running successfully!"
 else
     echo "[-] Failed to start Conky. Running in foreground to check error:"

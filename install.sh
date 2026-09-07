@@ -106,8 +106,9 @@ if [ ! -f "$CONKY_CONFIG_DIR/clock.mode" ] && [ ! -f "$CONKY_CONFIG_DIR/clock-ok
 fi
 
 # Set default calendar mode if not already present
-if [ ! -f "$CONKY_CONFIG_DIR/calendar.mode" ]; then
+if [ ! -f "$CONKY_CONFIG_DIR/calendar.mode" ] && [ ! -f "$CONKY_CONFIG_DIR/calendar-okami.mode" ]; then
     echo "grid" > "$CONKY_CONFIG_DIR/calendar.mode"
+    echo "grid" > "$CONKY_CONFIG_DIR/calendar-okami.mode"
     echo "[+] Initialized default calendar mode: grid"
 fi
 

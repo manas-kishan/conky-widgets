@@ -29,9 +29,11 @@ if [[ -n "$ARG" ]]; then
     case "$ARG" in
         grid|--grid|g|horizontal|h|row|grid-7)
             echo "grid" > "$HOME/.config/conky/calendar.mode"
+            echo "grid" > "$HOME/.config/conky/calendar-okami.mode"
             ;;
         vertical|--vertical|v|col|column|list)
             echo "vertical" > "$HOME/.config/conky/calendar.mode"
+            echo "vertical" > "$HOME/.config/conky/calendar-okami.mode"
             ;;
     esac
 fi
@@ -48,6 +50,8 @@ ln -sf "$SCRIPT_DIR/okami-calendar.lua" "$HOME/.config/conky/okami-calendar.lua"
 MODE="grid"
 if [ -f "$HOME/.config/conky/calendar.mode" ]; then
     MODE="$(cat "$HOME/.config/conky/calendar.mode")"
+elif [ -f "$HOME/.config/conky/calendar-okami.mode" ]; then
+    MODE="$(cat "$HOME/.config/conky/calendar-okami.mode")"
 fi
 
 echo "==> Starting Conky with: calendar.conf (Mode: $MODE)..."
